@@ -73,30 +73,6 @@ func getDraft() ([]Post, error) {
 	return posts, nil
 }
 
-// func getPosts() ([]Post, error) {
-// 	rows, err := db.Query("SELECT id, title, content from public.posts;")
-
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	var posts []Post
-// 	for rows.Next() {
-// 		var p Post
-// 		err := rows.Scan(&p.ID, &p.Title, &p.Content)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 		posts = append(posts, p)
-// 	}
-
-// 	if err = rows.Err(); err != nil {
-// 		return nil, err
-// 	}
-
-// 	return posts, nil
-// }
-
 func updatePost(id string, post *Post ) error {
 	_, err := db.Exec(
 		"UPDATE public.posts SET title=$1, content=$2, published=$3 WHERE id =$4;",
