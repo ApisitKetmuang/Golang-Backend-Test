@@ -10,7 +10,6 @@ import (
 )
 
 const (
-	/* postgres://posts:38S2GPNZut4Tmvan@dev.opensource-technology.com:5523/posts?sslmode=disable */
 	host     = "dev.opensource-technology.com"  
 	port     = 5523         
 	user     = "posts "     
