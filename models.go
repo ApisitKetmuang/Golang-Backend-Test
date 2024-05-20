@@ -2,7 +2,7 @@ package main
 
 func createPost(post *Post ) error {
 	_, err := db.Exec(
-		"INSERT INTO public.posts(title, content) VALUES ($1, $2) WHERE title IS NOT NULL;",
+		"INSERT INTO public.posts(title, content) VALUES ($1, $2);",
 		post.Title,
 		post.Content,
 	)
@@ -12,7 +12,7 @@ func createPost(post *Post ) error {
 func getPost(id string) (Post, error) {
 	var p Post
 	row := db.QueryRow(
-		"select id, title, content, published, created_at From public.posts WHERE id=$1;",
+		"SELECT id, title, content, published, created_at from public.posts WHERE id=$1;",
 		id,
 	)
 
@@ -75,9 +75,17 @@ func getDraft() ([]Post, error) {
 
 func updatePost(id string, post *Post ) error {
 	_, err := db.Exec(
-		"UPDATE public.posts SET title=$1, content=$2, published=$3 WHERE id =$4;",
+		"UPDATE public.posts SET title=$1, content=$2 WHERE id =$3;",
 		post.Title,
 		post.Content,
+		id,
+	)
+	return err
+}
+
+func publishedPost(id string, post *Post ) error {
+	_, err := db.Exec(
+		"UPDATE public.posts SET published=$1 WHERE id =$2;",
 		post.Published,
 		id,
 	)
@@ -86,8 +94,9 @@ func updatePost(id string, post *Post ) error {
 
 func deletePost(id string) error {
 	_, err := db.Exec(
-		"DELETE FROM public.posts WHERE id=$1;",
+		"DELETE from public.posts WHERE id=$1;",
 		id,
 	)
+
 	return err
 }

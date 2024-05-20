@@ -30,7 +30,7 @@ var db *sql.DB
 func main() {
 
 	psqlInfo := fmt.Sprintf(`host=%s port=%d user=%s password=%s dbname=%s sslmode=disable`,
-	host, 	port, 	user, 	password, 	dbname)
+	host, port, user, password, dbname)
 
 	sdb, err := sql.Open("postgres", psqlInfo)
 
@@ -49,63 +49,68 @@ func main() {
 
 	app := fiber.New()
 
-	app.Get("/post", getPostsHandler)
-	app.Get("/draft", getDraftsHandler)
-	app.Get("/post/:id", getPostHandler)
-	// app.Get("/post/:id?/:title?", getPostHandler)
+	app.Get("/posts", getPostsHandler)
+	app.Get("/posts/draft", getDraftsHandler)
+	app.Get("/posts/:id", getPostHandler)
 
-	app.Post("/post", createPostHandler)
-	app.Put("/post/:id", updatePostHandler)
-	app.Delete("/post/:id", deletePostHandler)
-
+	app.Post("/posts", createPostHandler)
+	app.Put("/posts/:id", updatePostHandler)
+	app.Patch("/posts/:id", publishedPostHandler)
+	app.Delete("/posts/:id", deletePostHandler)
 
 	app.Listen(":8080")
 }
 
-//draft
+//DraftPage
 func getDraftsHandler(c *fiber.Ctx) error {
 	post, err := getDraft()
 	if err != nil {
-		return c.SendStatus(fiber.StatusBadRequest)
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
-	return c.JSON(post)
+	return c.Status(200).JSON(fiber.Map{"posts": post})
 }
 
-//published
+//PublishedPage
 func getPostsHandler(c *fiber.Ctx) error {
 	post, err := getPosts()
 	if err != nil {
-		return c.SendStatus(fiber.StatusBadRequest)
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
-	return c.JSON(post)
+
+	return c.Status(200).JSON(fiber.Map{"posts": post})
 }
 
-//getPostById
+//GetPostById
 func getPostHandler(c *fiber.Ctx) error {
 	postId := c.Params("id")
-	// title := c.Params("title")
 	post, err := getPost(postId)
 
 	if err != nil {
-		return c.SendStatus(fiber.StatusBadRequest)
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
+
 	return c.JSON(post)
 }
 
-//CratePostById
+//CreatePost
 func createPostHandler(c *fiber.Ctx) error {
-	p := new(Post)
-
-	if err := c.BodyParser(p); err != nil {
-		return c.SendStatus(fiber.StatusBadRequest)
-	}
-
-	err := createPost(p)
-	if err != nil {
-		return c.SendStatus(fiber.StatusBadRequest)
+	post := new(Post)
+	
+	if err := c.BodyParser(post); err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 	
-	return c.JSON(p)
+	if post.Title == "" {
+		return c.Status(400).JSON(fiber.Map{"error": "title is required"})
+	}
+	
+	err := createPost(post)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+	}
+
+	return c.Status(201).JSON(fiber.Map{"message": "Post has created",
+	 "post": post})
 }
 
 //UpdatePostById
@@ -114,11 +119,24 @@ func updatePostHandler(c *fiber.Ctx) error {
 	p := new(Post)
 
 	if err := c.BodyParser(p); err != nil {
-		return c.SendStatus(fiber.StatusBadRequest)
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
 	post := updatePost(postId, p)
 	return c.JSON(post)
+}
+
+func publishedPostHandler(c *fiber.Ctx) error {
+	postId := c.Params("id")
+	p := new(Post)
+
+	if err := c.BodyParser(p); err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+	}
+
+	post := publishedPost(postId, p)
+	return c.Status(201).JSON(fiber.Map{"message": "Post has published",
+	 "post": post})
 }
 
 //DeletePostById
@@ -127,9 +145,9 @@ func deletePostHandler(c *fiber.Ctx) error {
 	err := deletePost(postId)
 
 	if err != nil {
-		return c.SendStatus(fiber.StatusBadRequest)
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
-	return c.SendStatus(fiber.StatusNoContent)
+	return c.Status(204).JSON(fiber.Map{"message": "Post deleted"})
 }
 
