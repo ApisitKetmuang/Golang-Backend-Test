@@ -1,18 +1,17 @@
 package main
 
 func createPost(post *Post ) error {
-	_, err := db.Exec(
-		"INSERT INTO public.posts(title, content) VALUES ($1, $2);",
+	_, err := db.Exec("INSERT INTO public.posts(title, content) VALUES ($1, $2);",
 		post.Title,
 		post.Content,
 	)
-		return err
+
+	return err
 }
 
 func getPost(id string) (Post, error) {
 	var p Post
-	row := db.QueryRow(
-		"SELECT id, title, content, published, created_at from public.posts WHERE id=$1;",
+	row := db.QueryRow("SELECT id, title, content, published, created_at from public.posts WHERE id=$1;",
 		id,
 	)
 
@@ -74,28 +73,27 @@ func getDraft() ([]Post, error) {
 }
 
 func updatePost(id string, post *Post ) error {
-	_, err := db.Exec(
-		"UPDATE public.posts SET title=$1, content=$2 WHERE id =$3;",
+	_, err := db.Exec("UPDATE public.posts SET title=$1, content=$2 WHERE id =$3;",
 		post.Title,
 		post.Content,
 		id,
 	)
+
 	return err
 }
 
 func publishedPost(id string, post *Post ) error {
-	_, err := db.Exec(
-		"UPDATE public.posts SET published=$1 WHERE id =$2;",
+	_, err := db.Exec("UPDATE public.posts SET published=$1 WHERE id =$2;", 
 		post.Published,
 		id,
 	)
+
 	return err
 }
 
 func deletePost(id string) error {
-	_, err := db.Exec(
-		"DELETE from public.posts WHERE id=$1;",
-		id,
+	_, err := db.Exec("DELETE from public.posts WHERE id=$1;",
+	id,
 	)
 
 	return err

@@ -109,8 +109,7 @@ func createPostHandler(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
-	return c.Status(201).JSON(fiber.Map{"message": "Post has created",
-	 "post": post})
+	return c.Status(201).JSON(fiber.Map{"message": "Post has created", "post": post})
 }
 
 //UpdatePostById
@@ -135,8 +134,7 @@ func publishedPostHandler(c *fiber.Ctx) error {
 	}
 
 	post := publishedPost(postId, p)
-	return c.Status(201).JSON(fiber.Map{"message": "Post has published",
-	 "post": post})
+	return c.Status(201).JSON(fiber.Map{"message": "Post has published", "post": post})
 }
 
 //DeletePostById
